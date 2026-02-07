@@ -2,6 +2,38 @@ name: my-first-workflow
 
 on:
   workflow_call: #this makes it reusable, only triggered by calls from other worklflows
+    inputs: #used to decide which jobs to run when called
+      run_unit_tests:
+        description: "Run Unit Tests"
+        required: false
+        default: true
+        type: boolean
+      run_build:
+        description: "Create Application Image"
+        required: false
+        default: true
+        type: boolean
+      run_codeql:
+        description: "Run CodeQL Scan"
+        required: false
+        default: false
+        type: boolean
+      run_sonarqube:
+        description: "Run SonarQube Scan"
+        required: false
+        default: false
+        type: boolean
+      run_dockerhub_publish:
+        description: "Publish Docker Image to DockerHub"
+        required: false
+        default: false
+        type: boolean
+      run_ghcr_publish:
+        description: "Publish Docker Image to GHCR"
+        required: false
+        default: false
+        type: boolean
+        
     secrets: #below secrets are required
       SONAR_TOKEN:
         required: true
@@ -11,6 +43,7 @@ on:
         required: true
 jobs:
   unit-tests:
+    if: ${{ inputs.run_unit_tests }} #only runs if the value is true, it is set to tue by default, so will run
     name: Running Unit Tests
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +69,7 @@ jobs:
           path: reports/ #path to upload from
 
   codeql:
+    if: ${{ inputs.run_codeql }}
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions: #locks down permissions for the workflow, only allowing what is necessary for the workflow to run
@@ -60,6 +94,7 @@ jobs:
           category: "security"
 
   sonarqube:
+    if: ${{ inputs.run_sonarqube }}
     name: SonarQube
     runs-on: ubuntu-latest
     needs: unit-tests    #ensures that the SonarQube analysis only runs after the unit tests have completed successfully
@@ -86,10 +121,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build:
+    if: ${{ success() && inputs.run_build }} #if the listed in needs are successful and inputs.run_build id true, run job
     name: Build Image
     runs-on: ubuntu-latest
-    needs: [codeql, sonarqube] #ensures that the build job only runs after the Sonar
-    if: success() 
+    needs: [unit-tests, codeql, sonarqube] #ensures that the build job only runs after the Sonar
     #ensures that the build job only runs if the previous jobs (codeql and sonarqube) were successful
     
     outputs:
@@ -125,6 +160,7 @@ jobs:
           path: thinknyx_app.tar
 
   publish-dockerhub:
+    if: ${{ inputs.run_dockerhub_publish }} #run only if inputs.run_dockerhub_publish is true
     name: Publish to Docker Hub
     runs-on: ubuntu-latest
     needs: build
@@ -156,6 +192,7 @@ jobs:
           docker image push ${{ secrets.DOCKERHUB_USERNAME }}/thinknyx_app:$IMAGE_TAG
 
   publish-ghcr:
+    if: ${{ inputs.run_ghcr_publish }}
     name: Publish to GitHub Container Registry
     runs-on: ubuntu-latest
     needs: build
