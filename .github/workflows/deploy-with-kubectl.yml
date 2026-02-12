@@ -1,9 +1,9 @@
 name: Deployment using kubectl
 on: 
   workflow_call:
-    inputs:
+    inputs: #parameter definition #what user should input for workflow to run
       ENVIRONMENT:
-        description: 'Deployment Environment (e.g., STAGING, PRODUCTIONd).'
+        description: 'Deployment Environment (e.g., STAGING, PRODUCTION).'
         required: true
         type: string
       IMAGE_NAME:
@@ -18,7 +18,7 @@ jobs:
   deploy:
     environment: ${{ inputs.ENVIRONMENT }}
     env:
-      NAMESPACE: ${{ vars.NAMESPACE}}
+      NAMESPACE: ${{ vars.NAMESPACE }}
 
     runs-on: github-actions-scaleset-demo
     steps:
