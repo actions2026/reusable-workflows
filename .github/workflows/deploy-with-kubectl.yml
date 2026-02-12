@@ -18,7 +18,7 @@ jobs:
   deploy:
     environment: ${{ inputs.ENVIRONMENT }}
     env:
-      NAMESPACE: ${{ vars.NAMESPACE }}
+      NAMESPACE: ${{ vars.NAMESPACE }} #creating a new env variable "NAMESPACE" to hold the value of "NAMESPACE" variable created in UI environments. (Those are accessed using $ {{ vars. ENVNAME }}
 
     runs-on: github-actions-scaleset-demo
     steps:
