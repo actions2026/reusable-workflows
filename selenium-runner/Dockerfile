@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     libnss3 \
     libxss1 \
-    libasound2 \
+    libasound2t64 \
     libgtk-3-0 \
     libgbm1 \
   && rm -rf /var/lib/apt/lists/*
